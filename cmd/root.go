@@ -22,10 +22,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&options.AccountID, "account-id", "", "limit analysis to events in this AWS account")
 	rootCmd.PersistentFlags().StringVar(&options.Region, "region", "", "limit analysis to events in this region")
 	rootCmd.PersistentFlags().StringVar(&options.AthenaWorkgroup, "athena-workgroup", "primary", "run analysis in this Athena workgroup")
-	rootCmd.PersistentFlags().IntVar(&options.AnalysisPeriod, "analysis-period", 90, "how far back into the access records to look")
-
 	rootCmd.PersistentFlags().StringVar(&options.QueryResultsBucket, "query-results-bucket", "", "(optional) S3 bucket for Athena query results")
 	rootCmd.PersistentFlags().StringVar(&options.QueryResultsPrefix, "query-results-prefix", "", "(optional) S3 bucket for Athena query prefix")
+	rootCmd.PersistentFlags().StringVar(&options.OutputFormat, "output-format", "json", "json or hcl")
+	rootCmd.PersistentFlags().IntVar(&options.AnalysisPeriod, "analysis-period", 90, "how far back into the access records to look")
 
 	rootCmd.MarkPersistentFlagRequired("user-identity-arn")
 	rootCmd.MarkPersistentFlagRequired("account-id")
@@ -37,6 +37,10 @@ var rootCmd = &cobra.Command{
 	Use:   "aws-policy-optimizer",
 	Short: "analyze AWS CloudTrail Access Logs and generate least-privilege IAM policies based on utilization",
 	Run: func(rootCmd *cobra.Command, args []string) {
+
+		if options.OutputFormat != "json" && options.OutputFormat != "hcl" {
+			log.Fatalf("invalid output format '%s'", options.OutputFormat)
+		}
 		policy, err := optimizer.GenerateOptimizedPolicy(options)
 		if err != nil {
 			log.Fatal(err)

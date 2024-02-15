@@ -9,6 +9,7 @@ import (
 
 	"github.com/gigawattio/awsarn"
 
+	"github.com/flosell/iam-policy-json-to-terraform/converter"
 	"github.com/micahhausler/aws-iam-policy/policy"
 )
 
@@ -21,6 +22,7 @@ type GenerateOptimizedPolicyOptions struct {
 	UserIdentityARN    string
 	AccountID          string
 	Region             string
+	OutputFormat       string
 	AnalysisPeriod     int
 }
 
@@ -110,7 +112,13 @@ func GenerateOptimizedPolicy(options GenerateOptimizedPolicyOptions) (string, er
 	}
 
 	out, _ := json.MarshalIndent(p, "", "\t")
-	return string(out), nil
+
+	if options.OutputFormat == "hcl" {
+		return converter.Convert("GenIAMPolicy", out)
+
+	} else {
+		return string(out), nil
+	}
 }
 
 func generateGlobPattern(ss []string) string {
