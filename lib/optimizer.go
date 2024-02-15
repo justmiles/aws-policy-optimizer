@@ -26,7 +26,6 @@ type GenerateOptimizedPolicyOptions struct {
 	AnalysisPeriod     int
 }
 
-// TODO: consider setting custom output https://github.com/flosell/iam-policy-json-to-terraform
 func GenerateOptimizedPolicy(options GenerateOptimizedPolicyOptions) (string, error) {
 
 	start := time.Now().AddDate(0, 0, options.AnalysisPeriod*-1)
