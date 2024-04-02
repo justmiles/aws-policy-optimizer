@@ -26,6 +26,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&options.QueryResultsPrefix, "query-results-prefix", "", "(optional) S3 bucket for Athena query prefix")
 	rootCmd.PersistentFlags().StringVar(&options.OutputFormat, "output-format", "json", "json or hcl")
 	rootCmd.PersistentFlags().IntVar(&options.AnalysisPeriod, "analysis-period", 90, "how far back into the access records to look")
+	rootCmd.PersistentFlags().BoolVar(&options.CombinePrefixes, "shrink-policy", false, "whether or not to combine statements by api call prefix")
 
 	rootCmd.MarkPersistentFlagRequired("user-identity-arn")
 	rootCmd.MarkPersistentFlagRequired("account-id")

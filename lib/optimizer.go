@@ -24,6 +24,7 @@ type GenerateOptimizedPolicyOptions struct {
 	Region             string
 	OutputFormat       string
 	AnalysisPeriod     int
+	CombinePrefixes    bool
 }
 
 func GenerateOptimizedPolicy(options GenerateOptimizedPolicyOptions) (string, error) {
@@ -73,17 +74,30 @@ func GenerateOptimizedPolicy(options GenerateOptimizedPolicyOptions) (string, er
 	var statements = []policy.Statement{}
 	for identity, permissionSet := range permissionMap {
 		for action, resources := range permissionSet {
-			consolidatedResources, err := consolidateARNs(resources)
-			if err != nil {
-				return "", err
+			var consolidatedResources []string
+			if options.CombinePrefixes {
+				consolidatedResources = consolidatePrefixes(resources)
+			} else {
+				var err error
+				consolidatedResources, err = consolidateARNs(resources)
+				if err != nil {
+					return "", err
+				}
 			}
+
 			actions := []string{action}
 
 			// deduplicate policies
 			for dupeAction, dupeResources := range permissionSet {
-				dupeConsolidatedResources, err := consolidateARNs(dupeResources)
-				if err != nil {
-					return "", err
+				var dupeConsolidatedResources []string
+				var err error
+				if options.CombinePrefixes {
+					dupeConsolidatedResources = consolidatePrefixes(dupeResources)
+				} else {
+					dupeConsolidatedResources, err = consolidateARNs(dupeResources)
+					if err != nil {
+						return "", err
+					}
 				}
 				if dupeAction == action {
 					continue
@@ -95,12 +109,11 @@ func GenerateOptimizedPolicy(options GenerateOptimizedPolicyOptions) (string, er
 			}
 
 			statements = append(statements, policy.Statement{
-				Effect: policy.EffectAllow,
+				Effect:   policy.EffectAllow,
 				// Principal: policy.NewServicePrincipal("cloudtrail.amazonaws.com"), // TODO: consider getting the principal
 				Action:   policy.NewStringOrSlice(false, actions...),
 				Resource: policy.NewStringOrSlice(false, consolidatedResources...),
-			},
-			)
+			})
 		}
 	}
 
@@ -120,21 +133,22 @@ func GenerateOptimizedPolicy(options GenerateOptimizedPolicyOptions) (string, er
 	}
 }
 
-func generateGlobPattern(ss []string) string {
-	if len(ss) == 0 {
-		return ""
-	}
-
-	parts := strings.Split(ss[0], "/")
-	for i := 1; i < len(parts); i++ {
-		for _, s := range ss {
-			if !strings.HasPrefix(s, strings.Join(parts[:i+1], "/")) {
-				return strings.Join(parts[:i], "/") + "/*"
-			}
+func consolidatePrefixes(resources []string) []string {
+	prefixMap := make(map[string]struct{})
+	for _, resource := range resources {
+		parts := strings.Split(resource, "/")
+		for i := range parts {
+			prefix := strings.Join(parts[:i+1], "/")
+			prefixMap[prefix] = struct{}{}
 		}
 	}
 
-	return strings.Join(parts, "/")
+	consolidated := make([]string, 0, len(prefixMap))
+	for prefix := range prefixMap {
+		consolidated = append(consolidated, prefix+"/*")
+	}
+
+	return consolidated
 }
 
 func consolidateARNs(arns []string) ([]string, error) {
@@ -164,6 +178,23 @@ func consolidateARNs(arns []string) ([]string, error) {
 	}
 
 	return ss, nil
+}
+
+func generateGlobPattern(ss []string) string {
+	if len(ss) == 0 {
+		return ""
+	}
+
+	parts := strings.Split(ss[0], "/")
+	for i := 1; i < len(parts); i++ {
+		for _, s := range ss {
+			if !strings.HasPrefix(s, strings.Join(parts[:i+1], "/")) {
+				return strings.Join(parts[:i], "/") + "/*"
+			}
+		}
+	}
+
+	return strings.Join(parts, "/")
 }
 
 type UsageHistoryRecord struct {
