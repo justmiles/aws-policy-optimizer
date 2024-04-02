@@ -18,9 +18,9 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&options.Database, "database", "default", "database name for Athena CloudTrail Table")
 	rootCmd.PersistentFlags().StringVar(&options.Table, "table", "cloudtrail", "table name for Athena CloudTrail Table")
-	rootCmd.PersistentFlags().StringVar(&options.UserIdentityARN, "user-identity-arn", "", "the ARN of the target resource")
-	rootCmd.PersistentFlags().StringVar(&options.AccountID, "account-id", "", "limit analysis to events in this AWS account")
-	rootCmd.PersistentFlags().StringVar(&options.Region, "region", "", "limit analysis to events in this region")
+	rootCmd.PersistentFlags().StringVar(&options.UserIdentityARN, "user-identity-arn", "", "(required) the whole or partial ARN of the target resource")
+	rootCmd.PersistentFlags().StringVar(&options.AccountID, "account-id", "", "(required) limit analysis to events in this AWS account")
+	rootCmd.PersistentFlags().StringVar(&options.Region, "region", "", "(required) limit analysis to events in this region")
 	rootCmd.PersistentFlags().StringVar(&options.AthenaWorkgroup, "athena-workgroup", "primary", "run analysis in this Athena workgroup")
 	rootCmd.PersistentFlags().StringVar(&options.QueryResultsBucket, "query-results-bucket", "", "(optional) S3 bucket for Athena query results")
 	rootCmd.PersistentFlags().StringVar(&options.QueryResultsPrefix, "query-results-prefix", "", "(optional) S3 bucket for Athena query prefix")

@@ -38,7 +38,7 @@ func GenerateOptimizedPolicy(options GenerateOptimizedPolicyOptions) (string, er
 	FROM "%s"."%s"
 	CROSS JOIN UNNEST(resources) AS t(resource)
 	WHERE day > '%s'
-	AND useridentity.arn IN ('%s')
+	AND regexp_like(useridentity.arn, '%s')
 	AND account_id = '%s'
 	AND region = '%s'
 	AND NULLIF(errorcode, '') IS NULL
