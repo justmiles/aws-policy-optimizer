@@ -19,7 +19,7 @@ type GenerateOptimizedPolicyOptions struct {
 	QueryResultsBucket string
 	QueryResultsPrefix string
 	AthenaWorkgroup    string
-	UserIdentityARN    string
+	IAMRole			       string
 	AccountID          string
 	Region             string
 	OutputFormat       string
@@ -32,7 +32,7 @@ func GenerateOptimizedPolicy(options GenerateOptimizedPolicyOptions) (string, er
 
 	sql := fmt.Sprintf(`
 	SELECT DISTINCT
-		useridentity.arn as useridentity,
+		useridentity.sessionContext.sessionIssuer.arn as useridentity,
 		CONCAT(SPLIT_PART(eventsource, '.', 1),':',eventname) as permission,
 		resource.arn as resource
 	FROM "%s"."%s"
@@ -42,7 +42,7 @@ func GenerateOptimizedPolicy(options GenerateOptimizedPolicyOptions) (string, er
 	AND account_id = '%s'
 	AND region = '%s'
 	AND NULLIF(errorcode, '') IS NULL
-	`, options.Database, options.Table, start.Format("2006/01/02"), options.UserIdentityARN, options.AccountID, options.Region)
+	`, options.Database, options.Table, start.Format("2006/01/02"), options.IAMRole, options.AccountID, options.Region)
 
 	var usageHistory []UsageHistoryRecord
 	err := QueryAthena(sql, options.Database, options.QueryResultsBucket, options.QueryResultsPrefix, options.AthenaWorkgroup, &usageHistory)
