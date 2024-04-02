@@ -14,22 +14,28 @@ aws-policy-optimizer [flags]
 
 The AWS Policy Optimizer supports the following flags:
 
-- `--account-id`: limit analysis to events in this AWS account
+- `--account-id`: (required) limit analysis to events in this AWS account
 - `--analysis-period`: how far back into the access records to look (default 90)
 - `--athena-workgroup`: run analysis in this Athena workgroup (default "primary")
 - `--database`: database name for Athena CloudTrail Table (default "default")
 - `--query-results-bucket`: (optional) S3 bucket for Athena query results
 - `--query-results-prefix`: (optional) S3 bucket for Athena query prefix
-- `--region`: limit analysis to events in this region
+- `--region`: (required) limit analysis to events in this region
 - `--table`: table name for Athena CloudTrail Table (default "cloudtrail")
-- `--user-identity-arn`: the ARN of the target resource
+- `--user-identity-arn`: (required) the whole or partial ARN of the target resource
 
 ## Example
 
-Here's an example command that generates an optimized policy:
+Here's a couple example commands that generate an optimized policy:
 
 ```bash
 aws-policy-optimizer --user-identity-arn arn:aws:iam::123456789012:user/my-user --account-id 123456789012 --region us-west-2
+```
+
+```bash
+# useful in cases of ECS where task arns change for assumed roles, but takes longer
+aws-policy-optimizer --user-identity-arn my-role-name --account-id 123456789012 --region us-east-1
+
 ```
 
 ## Contributing
