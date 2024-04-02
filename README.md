@@ -1,4 +1,4 @@
-# AWS Policy Optimizerarn
+# AWS Policy Optimizer
 
 The AWS Policy Optimizer is a tool that analyzes AWS CloudTrail Access Logs and generates least-privilege IAM policies based on utilization. It aims to help optimize resource access by identifying the specific permissions needed for each resource.
 
